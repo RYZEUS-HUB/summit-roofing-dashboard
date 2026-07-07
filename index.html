@@ -1,0 +1,806 @@
+<title>Summit Roofing and Contracting — Plumbing CRM Demo</title>
+<style>
+  :root{
+    --bg:#F6F7FA;
+    --surface:#FFFFFF;
+    --surface-2:#EEF1F6;
+    --ink:#101826;
+    --ink-muted:#5B6472;
+    --ink-faint:#8891A0;
+    --sidebar:#0C1626;
+    --sidebar-hover:#16233A;
+    --sidebar-text:#AEB9CC;
+    --accent:#2557E8;
+    --accent-dark:#173F93;
+    --accent-soft:#E3EAFC;
+    --success:#1C9B6B;
+    --success-soft:#E1F5EC;
+    --warning:#B9791A;
+    --warning-soft:#FBEDD9;
+    --critical:#D8433D;
+    --critical-soft:#FBE3E1;
+    --border:#E3E7EE;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+
+  .app{ display:grid; grid-template-columns:248px 1fr; min-height:100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    background:var(--sidebar);
+    color:var(--sidebar-text);
+    padding:22px 16px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    padding:6px 8px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    margin-bottom:14px;
+  }
+  .brand-mark{
+    width:34px; height:34px; border-radius:9px;
+    background:linear-gradient(155deg, var(--accent), #1A3E9E);
+    display:flex; align-items:center; justify-content:center;
+    flex:none;
+  }
+  .brand-name{ line-height:1.2; }
+  .brand-name strong{
+    display:block; font-size:14.5px; font-weight:700; color:#fff; letter-spacing:0.01em;
+  }
+  .brand-name span{
+    display:block; font-size:10.5px; color:var(--sidebar-text); text-transform:uppercase; letter-spacing:0.09em; margin-top:2px;
+  }
+  .nav-group-label{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; color:#5C6A85;
+    padding:14px 10px 6px;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:11px;
+    padding:9px 10px; border-radius:8px;
+    font-size:13.6px; font-weight:500; color:var(--sidebar-text);
+    cursor:pointer; user-select:none;
+    border:none; background:none; width:100%; text-align:left; font-family:inherit;
+  }
+  .nav-item svg{ flex:none; opacity:0.85; }
+  .nav-item:hover{ background:var(--sidebar-hover); color:#fff; }
+  .nav-item.active{ background:var(--accent); color:#fff; }
+  .nav-item.active svg{ opacity:1; }
+  .nav-badge{
+    margin-left:auto; background:rgba(255,255,255,0.14); color:#fff;
+    font-size:10.5px; font-weight:700; padding:1px 6px; border-radius:20px;
+  }
+  .nav-item.active .nav-badge{ background:rgba(255,255,255,0.25); }
+  .sidebar-foot{ margin-top:auto; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); }
+  .sidebar-foot .nav-item{ color:#7C879C; }
+
+  /* ---------- Main ---------- */
+  .main{ display:flex; flex-direction:column; min-height:100vh; }
+  .topbar{
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:16px 30px; display:flex; align-items:center; gap:18px;
+    position:sticky; top:0; z-index:5;
+  }
+  .topbar h1{ font-size:19px; margin:0; font-weight:700; letter-spacing:-0.01em; }
+  .topbar .eyebrow{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-faint); font-weight:700; margin:0 0 2px;
+  }
+  .search{
+    margin-left:auto; display:flex; align-items:center; gap:8px;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    padding:8px 12px; width:260px; color:var(--ink-faint); font-size:13px;
+  }
+  .icon-btn{
+    width:36px; height:36px; border-radius:9px; border:1px solid var(--border);
+    background:var(--surface); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; position:relative; flex:none;
+  }
+  .icon-btn:hover{ background:var(--surface-2); }
+  .dot-flag{
+    position:absolute; top:-3px; right:-3px; width:8px; height:8px; border-radius:50%;
+    background:var(--critical); border:2px solid var(--surface);
+  }
+  .avatar{
+    width:36px; height:36px; border-radius:9px; background:var(--accent-soft); color:var(--accent-dark);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:none;
+  }
+  .content{ padding:26px 30px 60px; flex:1; }
+  .section{ display:none; animation:fade .25s ease; }
+  .section.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  /* ---------- Reusable bits ---------- */
+  .grid{ display:grid; gap:16px; }
+  .stat-grid{ grid-template-columns:repeat(6, 1fr); }
+  .card{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px;
+  }
+  .stat-card{ display:flex; flex-direction:column; gap:8px; }
+  .stat-top{ display:flex; align-items:center; justify-content:space-between; }
+  .stat-icon{
+    width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .stat-label{ font-size:12px; color:var(--ink-muted); font-weight:600; }
+  .stat-value{ font-size:23px; font-weight:700; font-family:var(--mono); font-variant-numeric:tabular-nums; letter-spacing:-0.01em; }
+  .stat-delta{ font-size:12px; font-weight:700; display:flex; align-items:center; gap:4px; }
+  .stat-delta.up{ color:var(--success); }
+  .stat-delta.down{ color:var(--critical); }
+  .stat-delta span.ctx{ color:var(--ink-faint); font-weight:500; }
+
+  .row-2{ grid-template-columns:1.3fr 1fr; }
+  .row-2b{ grid-template-columns:1fr 1.3fr; }
+  .section-title-row{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
+  .section-title-row h2{ font-size:15px; margin:0; font-weight:700; }
+  .link-btn{ background:none; border:none; color:var(--accent); font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; padding:0; }
+  .link-btn:hover{ text-decoration:underline; }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700;
+    padding:3px 9px; border-radius:20px; white-space:nowrap;
+  }
+  .pill-new{ background:var(--accent-soft); color:var(--accent-dark); }
+  .pill-contacted{ background:#EAE3FB; color:#5B33B8; }
+  .pill-estimate{ background:var(--warning-soft); color:var(--warning); }
+  .pill-scheduled{ background:#DCF0FB; color:#146E9E; }
+  .pill-won{ background:var(--success-soft); color:var(--success); }
+  .pill-draft{ background:var(--surface-2); color:var(--ink-muted); }
+  .pill-sent{ background:var(--accent-soft); color:var(--accent-dark); }
+  .pill-approved{ background:#DCF0FB; color:#146E9E; }
+  .pill-paid{ background:var(--success-soft); color:var(--success); }
+  .pill-overdue{ background:var(--critical-soft); color:var(--critical); }
+  .sev-dot{ width:7px; height:7px; border-radius:50%; flex:none; }
+
+  .btn{
+    border:none; border-radius:8px; padding:9px 15px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
+    display:inline-flex; align-items:center; gap:7px;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:hover{ background:var(--accent-dark); }
+  .btn-ghost{ background:var(--surface); color:var(--ink); border:1px solid var(--border); }
+  .btn-ghost:hover{ background:var(--surface-2); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13.2px; }
+  thead th{
+    text-align:left; font-size:10.8px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint);
+    padding:0 12px 10px; font-weight:700; border-bottom:1px solid var(--border);
+  }
+  tbody td{ padding:12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:var(--surface-2); }
+  td.num, th.num{ text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .cell-primary{ font-weight:600; }
+  .cell-sub{ color:var(--ink-faint); font-size:12px; margin-top:1px; }
+
+  .scroll-x{ overflow-x:auto; }
+
+  /* Funnel */
+  .funnel-row{ display:flex; align-items:center; gap:10px; padding:9px 0; }
+  .funnel-label{ width:110px; font-size:12.5px; font-weight:600; color:var(--ink-muted); flex:none; }
+  .funnel-bar-track{ flex:1; background:var(--surface-2); border-radius:6px; height:26px; position:relative; overflow:hidden; }
+  .funnel-bar-fill{ height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; color:#fff; font-size:12px; font-weight:700; font-family:var(--mono); }
+  .funnel-count{ width:34px; text-align:right; font-family:var(--mono); font-weight:700; font-size:13px; flex:none; }
+
+  /* Kanban */
+  .board{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px; align-items:start; }
+  .board-col-head{ display:flex; align-items:center; justify-content:space-between; padding:0 4px 10px; }
+  .board-col-head h3{ font-size:12.5px; margin:0; font-weight:700; }
+  .board-col-total{ font-family:var(--mono); font-size:11.5px; color:var(--ink-faint); font-weight:700; }
+  .board-col{ background:var(--surface-2); border-radius:12px; padding:10px; min-height:120px; }
+  .job-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:11px 12px; margin-bottom:9px;
+    cursor:grab;
+  }
+  .job-card:hover{ border-color:var(--accent); box-shadow:0 2px 10px rgba(37,87,232,0.08); }
+  .job-title{ font-size:12.8px; font-weight:700; margin-bottom:5px; line-height:1.3; }
+  .job-meta{ display:flex; align-items:center; justify-content:space-between; font-size:11.5px; color:var(--ink-faint); }
+  .job-amount{ font-family:var(--mono); font-weight:700; color:var(--ink); }
+  .job-tag{ display:inline-block; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; margin-bottom:6px; }
+
+  /* Calendar */
+  .cal-toolbar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .cal-toolbar .range{ font-weight:700; font-size:14px; }
+  .cal-grid{ display:grid; grid-template-columns:100px repeat(5,1fr); border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--surface); }
+  .cal-grid > div{ border-right:1px solid var(--border); border-bottom:1px solid var(--border); }
+  .cal-grid > div:nth-child(6n){ border-right:none; }
+  .cal-head{ padding:10px 12px; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-muted); background:var(--surface-2); text-align:center; }
+  .cal-head.techcol{ text-align:left; background:var(--surface); }
+  .cal-tech-row{ padding:16px 12px; display:flex; align-items:center; gap:9px; }
+  .tech-avatar{ width:26px; height:26px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; font-size:10.5px; font-weight:700; color:#fff; }
+  .tech-name{ font-size:12.5px; font-weight:600; }
+  .cal-cell{ padding:8px; display:flex; flex-direction:column; gap:6px; min-height:80px; }
+  .appt-chip{ border-radius:7px; padding:6px 8px; font-size:11px; line-height:1.3; color:#fff; font-weight:600; }
+  .appt-chip .t{ font-family:var(--mono); font-weight:700; opacity:0.9; font-size:10px; display:block; margin-bottom:1px; }
+
+  /* Booking panel */
+  .booking-overlay{ position:fixed; inset:0; background:rgba(10,16,28,0.4); display:none; align-items:stretch; justify-content:flex-end; z-index:50; }
+  .booking-overlay.open{ display:flex; }
+  .booking-panel{ width:380px; background:var(--surface); height:100%; padding:26px; box-shadow:-8px 0 30px rgba(0,0,0,0.15); display:flex; flex-direction:column; gap:14px; }
+  .booking-panel h3{ margin:0 0 2px; font-size:17px; }
+  .field label{ display:block; font-size:11.5px; font-weight:700; color:var(--ink-muted); margin-bottom:5px; text-transform:uppercase; letter-spacing:0.04em; }
+  .field input, .field select{
+    width:100%; padding:9px 10px; border:1px solid var(--border); border-radius:8px; font-size:13px; font-family:inherit; color:var(--ink); background:var(--surface);
+  }
+  .field input:focus, .field select:focus{ outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+  .close-x{ margin-left:auto; background:none; border:none; cursor:pointer; color:var(--ink-faint); font-size:18px; line-height:1; }
+
+  /* Reports */
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; }
+  .legend-item{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-muted); font-weight:600; }
+  .legend-sw{ width:10px; height:10px; border-radius:3px; }
+  .leaderboard-row{ display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .leaderboard-row:last-child{ border-bottom:none; }
+  .lb-rank{ width:22px; font-family:var(--mono); font-weight:700; color:var(--ink-faint); font-size:13px; }
+  .lb-name{ flex:1; }
+  .lb-name strong{ display:block; font-size:13px; }
+  .lb-name span{ font-size:11.5px; color:var(--ink-faint); }
+  .lb-metric{ text-align:right; font-family:var(--mono); font-weight:700; font-size:13px; min-width:74px; }
+  .lb-metric span{ display:block; font-size:10.5px; color:var(--ink-faint); font-weight:600; font-family:var(--sans); }
+
+  @media (max-width: 1180px){
+    .stat-grid{ grid-template-columns:repeat(3,1fr); }
+    .board{ grid-template-columns:repeat(3,1fr); overflow-x:auto; }
+  }
+</style>
+
+<div class="app">
+  <!-- ================= SIDEBAR ================= -->
+  <nav class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2 3 7v6c0 5 4 8.5 9 9 5-.5 9-4 9-9V7l-9-5Z" fill="white" fill-opacity="0.95"/><path d="M9 12.5 11 14.5 15.5 9.5" stroke="#173F93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="brand-name">
+        <strong>Summit Roofing &amp; Contracting</strong>
+        <span>Plumbing Division CRM</span>
+      </div>
+    </div>
+
+    <div class="nav-group-label">Overview</div>
+    <button class="nav-item active" data-section="dashboard">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Dashboard
+    </button>
+
+    <div class="nav-group-label">Sales</div>
+    <button class="nav-item" data-section="opportunities">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h18v3H3zM5 8l2 12h10l2-12"/><path d="M9.5 12h5"/></svg>
+      Opportunities
+      <span class="nav-badge">33</span>
+    </button>
+    <button class="nav-item" data-section="estimates">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M9 12h6M9 16h6M9 8h2"/></svg>
+      Estimates &amp; Invoices
+    </button>
+
+    <div class="nav-group-label">Operations</div>
+    <button class="nav-item" data-section="booking">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+      Calendar &amp; Booking
+      <span class="nav-badge">6</span>
+    </button>
+    <button class="nav-item" data-section="reports">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      Revenue &amp; Reports
+    </button>
+
+    <div class="sidebar-foot">
+      <button class="nav-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.64 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.64a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.36 9c.1.36.28.68.55.93.27.25.59.43.95.5H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Settings</button>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="topbar-eyebrow">Plumbing Division</p>
+        <h1 id="topbar-title">Good morning, Summit Plumbing</h1>
+      </div>
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        Search jobs, customers…
+      </div>
+      <button class="icon-btn" aria-label="Notifications">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <span class="dot-flag"></span>
+      </button>
+      <div class="avatar">SR</div>
+    </header>
+
+    <main class="content">
+
+      <!-- ============ DASHBOARD ============ -->
+      <section class="section active" id="sec-dashboard">
+        <div class="grid stat-grid" style="margin-bottom:18px;">
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Revenue this month</span>
+              <div class="stat-icon" style="background:var(--accent-soft);color:var(--accent-dark);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 1 0 0 7h5a3.5 3.5 0 1 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">$94,320</div>
+            <div class="stat-delta up">▲ 18% <span class="ctx">vs last month</span></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">New leads</span>
+              <div class="stat-icon" style="background:#EAE3FB;color:#5B33B8;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">37</div>
+            <div class="stat-delta up">▲ 9% <span class="ctx">vs last month</span></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Jobs booked today</span>
+              <div class="stat-icon" style="background:#DCF0FB;color:#146E9E;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">6</div>
+            <div class="stat-delta up">▲ 2 <span class="ctx">vs yesterday</span></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Emergency calls (24h)</span>
+              <div class="stat-icon" style="background:var(--critical-soft);color:var(--critical);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">4</div>
+            <div class="stat-delta down">▲ 1 <span class="ctx">vs yesterday</span></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Avg. ticket size</span>
+              <div class="stat-icon" style="background:var(--warning-soft);color:var(--warning);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+              </div>
+            </div>
+            <div class="stat-value">$1,285</div>
+            <div class="stat-delta up">▲ 6% <span class="ctx">vs last month</span></div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-top">
+              <span class="stat-label">Google rating</span>
+              <div class="stat-icon" style="background:var(--success-soft);color:var(--success);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.9L12 17.8 5.8 21.1 7 14.2l-5-4.9 6.9-1L12 2Z"/></svg>
+              </div>
+            </div>
+            <div class="stat-value" style="font-family:var(--sans);">4.8 ★</div>
+            <div class="stat-delta"><span class="ctx" style="color:var(--ink-faint);">212 reviews</span></div>
+          </div>
+        </div>
+
+        <div class="grid row-2" style="margin-bottom:16px;">
+          <div class="card">
+            <div class="section-title-row">
+              <h2>Revenue trend</h2>
+              <button class="link-btn" data-goto="reports">Full report →</button>
+            </div>
+            <canvas id="chart-revenue" height="190"></canvas>
+          </div>
+          <div class="card">
+            <div class="section-title-row">
+              <h2>Pipeline overview</h2>
+              <button class="link-btn" data-goto="opportunities">View board →</button>
+            </div>
+            <div class="funnel" id="dash-funnel"></div>
+            <div style="display:flex; gap:22px; margin-top:14px; padding-top:12px; border-top:1px solid var(--border);">
+              <div><div class="stat-label">Win rate</div><div style="font-family:var(--mono);font-weight:700;font-size:17px;">27%</div></div>
+              <div><div class="stat-label">Avg. job value</div><div style="font-family:var(--mono);font-weight:700;font-size:17px;">$2,940</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid row-2b">
+          <div class="card">
+            <div class="section-title-row">
+              <h2>Today's schedule</h2>
+              <button class="link-btn" data-goto="booking">View calendar →</button>
+            </div>
+            <table>
+              <tbody>
+                <tr><td style="width:70px;font-family:var(--mono);font-weight:700;">9:00a</td><td><div class="cell-primary">Water heater install — J. Alvarez</div><div class="cell-sub">4210 Birchwood Ln · Mike R.</div></td><td><span class="pill pill-scheduled">Install</span></td></tr>
+                <tr><td style="font-family:var(--mono);font-weight:700;">11:00a</td><td><div class="cell-primary">Estimate — slab leak, S. Patel</div><div class="cell-sub">118 Ferncreek Dr · Dana T.</div></td><td><span class="pill pill-estimate">Estimate</span></td></tr>
+                <tr><td style="font-family:var(--mono);font-weight:700;">1:30p</td><td><div class="cell-primary">Drain cleaning — H. Osei</div><div class="cell-sub">92 Laurel Ct · Carlos V.</div></td><td><span class="pill pill-won">Maintenance</span></td></tr>
+                <tr><td style="font-family:var(--mono);font-weight:700;">4:00p</td><td><div class="cell-primary">Emergency — burst pipe, T. Chen</div><div class="cell-sub">55 Ashgrove Rd · Mike R.</div></td><td><span class="pill pill-overdue">Emergency</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="section-title-row">
+              <h2>Tasks</h2>
+              <button class="link-btn">View all →</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <div style="display:flex;gap:9px;align-items:flex-start;"><span class="sev-dot" style="background:var(--critical);margin-top:5px;"></span><div><div style="font-size:13px;font-weight:600;">Call back 3 new leads</div><div class="cell-sub" style="color:var(--critical);">Due today</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start;"><span class="sev-dot" style="background:var(--critical);margin-top:5px;"></span><div><div style="font-size:13px;font-weight:600;">Send estimate to D. Brooks</div><div class="cell-sub" style="color:var(--critical);">Due today</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start;"><span class="sev-dot" style="background:var(--warning);margin-top:5px;"></span><div><div style="font-size:13px;font-weight:600;">Order water heater unit — Rheem 50gal</div><div class="cell-sub">Due tomorrow</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start;"><span class="sev-dot" style="background:var(--success);margin-top:5px;"></span><div><div style="font-size:13px;font-weight:600;text-decoration:line-through;color:var(--ink-faint);">Confirm parts delivery — repipe job</div><div class="cell-sub">Completed</div></div></div>
+              <div style="display:flex;gap:9px;align-items:flex-start;"><span class="sev-dot" style="background:var(--success);margin-top:5px;"></span><div><div style="font-size:13px;font-weight:600;text-decoration:line-through;color:var(--ink-faint);">Request review from C. Wallace</div><div class="cell-sub">Completed</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ OPPORTUNITIES ============ -->
+      <section class="section" id="sec-opportunities">
+        <div class="section-title-row">
+          <h2 style="font-size:18px;">Opportunities pipeline</h2>
+          <button class="btn btn-primary" id="btn-new-opp">+ New opportunity</button>
+        </div>
+        <div class="board">
+          <div>
+            <div class="board-col-head"><h3>New Lead</h3><span class="board-col-total">9 · $14.2k</span></div>
+            <div class="board-col">
+              <div class="job-card"><span class="job-tag" style="background:var(--critical-soft);color:var(--critical);">Emergency</span><div class="job-title">Kitchen sink leak</div><div class="job-meta"><span>J. Alvarez</span><span class="job-amount">—</span></div></div>
+              <div class="job-card"><span class="job-tag" style="background:var(--critical-soft);color:var(--critical);">Emergency</span><div class="job-title">No hot water</div><div class="job-meta"><span>T. Chen</span><span class="job-amount">—</span></div></div>
+              <div class="job-card"><div class="job-title">Toilet running constantly</div><div class="job-meta"><span>M. Diaz</span><span class="job-amount">—</span></div></div>
+              <div class="job-card"><div class="job-title">Low water pressure, 2nd floor</div><div class="job-meta"><span>K. Bell</span><span class="job-amount">—</span></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="board-col-head"><h3>Contacted</h3><span class="board-col-total">7 · $18.4k</span></div>
+            <div class="board-col">
+              <div class="job-card"><div class="job-title">Water heater replacement</div><div class="job-meta"><span>R. Kim</span><span class="job-amount">$2,400</span></div></div>
+              <div class="job-card"><div class="job-title">Slab leak detection</div><div class="job-meta"><span>S. Patel</span><span class="job-amount">$5,800</span></div></div>
+              <div class="job-card"><div class="job-title">Outdoor spigot repair</div><div class="job-meta"><span>N. Osei</span><span class="job-amount">$310</span></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="board-col-head"><h3>Estimate Sent</h3><span class="board-col-total">6 · $22.1k</span></div>
+            <div class="board-col">
+              <div class="job-card"><div class="job-title">Repipe whole house</div><div class="job-meta"><span>D. Brooks</span><span class="job-amount">$9,200</span></div></div>
+              <div class="job-card"><div class="job-title">Sewer line camera inspection</div><div class="job-meta"><span>L. Nguyen</span><span class="job-amount">$650</span></div></div>
+              <div class="job-card"><div class="job-title">Bathroom remodel rough-in</div><div class="job-meta"><span>F. Reyes</span><span class="job-amount">$6,900</span></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="board-col-head"><h3>Scheduled</h3><span class="board-col-total">5 · $9.8k</span></div>
+            <div class="board-col">
+              <div class="job-card"><div class="job-title">Sump pump install</div><div class="job-meta"><span>A. Garcia</span><span class="job-amount">$1,150</span></div></div>
+              <div class="job-card"><div class="job-title">Garbage disposal swap</div><div class="job-meta"><span>B. Ford</span><span class="job-amount">$320</span></div></div>
+              <div class="job-card"><div class="job-title">Backflow preventer test</div><div class="job-meta"><span>City of Millbrook</span><span class="job-amount">$275</span></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="board-col-head"><h3>Won</h3><span class="board-col-total">6 · $11.6k</span></div>
+            <div class="board-col">
+              <div class="job-card"><span class="job-tag" style="background:var(--success-soft);color:var(--success);">Paid</span><div class="job-title">Tankless water heater</div><div class="job-meta"><span>C. Wallace</span><span class="job-amount">$4,650</span></div></div>
+              <div class="job-card"><span class="job-tag" style="background:var(--success-soft);color:var(--success);">Paid</span><div class="job-title">Drain cleaning</div><div class="job-meta"><span>H. Osei</span><span class="job-amount">$290</span></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ESTIMATES & INVOICES ============ -->
+      <section class="section" id="sec-estimates">
+        <div class="section-title-row">
+          <h2 style="font-size:18px;">Estimates &amp; invoices</h2>
+          <button class="btn btn-primary">+ New estimate</button>
+        </div>
+        <div class="card scroll-x" style="padding:6px 18px 12px;">
+          <table>
+            <thead>
+              <tr><th>Job</th><th>Customer</th><th>Type</th><th class="num">Amount</th><th>Status</th><th>Date</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="cell-primary">Repipe whole house</td><td>D. Brooks</td><td>Estimate</td><td class="num">$9,200.00</td><td><span class="pill pill-sent">Sent</span></td><td>Jul 3</td></tr>
+              <tr><td class="cell-primary">Tankless water heater</td><td>C. Wallace</td><td>Invoice</td><td class="num">$4,650.00</td><td><span class="pill pill-paid">Paid</span></td><td>Jun 28</td></tr>
+              <tr><td class="cell-primary">Slab leak detection &amp; repair</td><td>S. Patel</td><td>Estimate</td><td class="num">$5,800.00</td><td><span class="pill pill-approved">Approved</span></td><td>Jul 1</td></tr>
+              <tr><td class="cell-primary">Bathroom remodel rough-in</td><td>F. Reyes</td><td>Estimate</td><td class="num">$6,900.00</td><td><span class="pill pill-draft">Draft</span></td><td>Jul 5</td></tr>
+              <tr><td class="cell-primary">Emergency — burst pipe</td><td>T. Chen</td><td>Invoice</td><td class="num">$980.00</td><td><span class="pill pill-overdue">Overdue</span></td><td>Jun 19</td></tr>
+              <tr><td class="cell-primary">Sump pump install</td><td>A. Garcia</td><td>Invoice</td><td class="num">$1,150.00</td><td><span class="pill pill-paid">Paid</span></td><td>Jun 24</td></tr>
+              <tr><td class="cell-primary">Sewer line camera inspection</td><td>L. Nguyen</td><td>Estimate</td><td class="num">$650.00</td><td><span class="pill pill-sent">Sent</span></td><td>Jul 4</td></tr>
+              <tr><td class="cell-primary">Drain cleaning</td><td>H. Osei</td><td>Invoice</td><td class="num">$290.00</td><td><span class="pill pill-paid">Paid</span></td><td>Jun 30</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ CALENDAR & BOOKING ============ -->
+      <section class="section" id="sec-booking">
+        <div class="cal-toolbar">
+          <h2 style="font-size:18px;margin:0;">Calendar &amp; booking</h2>
+          <span class="range" style="margin-left:6px;color:var(--ink-muted);font-weight:600;">Jul 6 – Jul 10, 2026</span>
+          <button class="btn btn-primary" style="margin-left:auto;" id="btn-open-booking">+ New booking</button>
+        </div>
+        <div class="cal-grid">
+          <div class="cal-head techcol">Technician</div>
+          <div class="cal-head">Mon 6</div>
+          <div class="cal-head">Tue 7</div>
+          <div class="cal-head">Wed 8</div>
+          <div class="cal-head">Thu 9</div>
+          <div class="cal-head">Fri 10</div>
+
+          <div class="cal-tech-row"><div class="tech-avatar" style="background:#2557E8;">MR</div><span class="tech-name">Mike R.</span></div>
+          <div class="cal-cell">
+            <div class="appt-chip" style="background:#2557E8;"><span class="t">9:00a</span>Water heater install</div>
+            <div class="appt-chip" style="background:var(--critical);"><span class="t">4:00p</span>Emergency — burst pipe</div>
+          </div>
+          <div class="cal-cell"><div class="appt-chip" style="background:#146E9E;"><span class="t">10:00a</span>Repipe — day 1</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:#146E9E;"><span class="t">8:30a</span>Repipe — day 2</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--warning);"><span class="t">1:00p</span>Estimate — F. Reyes</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--success);"><span class="t">9:30a</span>Maintenance — filter swap</div></div>
+
+          <div class="cal-tech-row"><div class="tech-avatar" style="background:#5B33B8;">DT</div><span class="tech-name">Dana T.</span></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--warning);"><span class="t">11:00a</span>Estimate — slab leak</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--success);"><span class="t">9:00a</span>Backflow test — City</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:#2557E8;"><span class="t">2:00p</span>Garbage disposal swap</div></div>
+          <div class="cal-cell"></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:#2557E8;"><span class="t">10:00a</span>Sump pump install</div></div>
+
+          <div class="cal-tech-row"><div class="tech-avatar" style="background:#146E9E;">CV</div><span class="tech-name">Carlos V.</span></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--success);"><span class="t">1:30p</span>Drain cleaning</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--success);"><span class="t">11:00a</span>Drain cleaning</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:var(--critical);"><span class="t">3:00p</span>Emergency — no hot water</div></div>
+          <div class="cal-cell"><div class="appt-chip" style="background:#146E9E;"><span class="t">9:00a</span>Sewer camera inspection</div></div>
+          <div class="cal-cell"></div>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item"><span class="legend-sw" style="background:var(--critical);"></span>Emergency</div>
+          <div class="legend-item"><span class="legend-sw" style="background:#2557E8;"></span>Install</div>
+          <div class="legend-item"><span class="legend-sw" style="background:var(--warning);"></span>Estimate</div>
+          <div class="legend-item"><span class="legend-sw" style="background:#146E9E;"></span>Multi-day / repipe</div>
+          <div class="legend-item"><span class="legend-sw" style="background:var(--success);"></span>Maintenance</div>
+        </div>
+      </section>
+
+      <!-- ============ REPORTS ============ -->
+      <section class="section" id="sec-reports">
+        <h2 style="font-size:18px;margin:0 0 16px;">Revenue &amp; reports</h2>
+        <div class="grid row-2" style="margin-bottom:16px;">
+          <div class="card">
+            <div class="section-title-row"><h2>6-month revenue trend</h2></div>
+            <canvas id="chart-revenue-2" height="200"></canvas>
+          </div>
+          <div class="card">
+            <div class="section-title-row"><h2>Revenue by service type</h2></div>
+            <canvas id="chart-services" height="200"></canvas>
+            <div class="legend" id="services-legend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-title-row"><h2>Technician leaderboard — this month</h2></div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">1</span>
+            <div class="lb-name"><strong>Mike R.</strong><span>19 jobs completed</span></div>
+            <div class="lb-metric">$31,420<span>revenue</span></div>
+            <div class="lb-metric">4.9 ★<span>rating</span></div>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">2</span>
+            <div class="lb-name"><strong>Carlos V.</strong><span>22 jobs completed</span></div>
+            <div class="lb-metric">$28,150<span>revenue</span></div>
+            <div class="lb-metric">4.8 ★<span>rating</span></div>
+          </div>
+          <div class="leaderboard-row">
+            <span class="lb-rank">3</span>
+            <div class="lb-name"><strong>Dana T.</strong><span>15 jobs completed</span></div>
+            <div class="lb-metric">$24,780<span>revenue</span></div>
+            <div class="lb-metric">4.9 ★<span>rating</span></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ BOOKING SLIDE-OVER ============ -->
+<div class="booking-overlay" id="booking-overlay">
+  <div class="booking-panel">
+    <div style="display:flex;align-items:center;">
+      <h3>New booking</h3>
+      <button class="close-x" id="booking-close" aria-label="Close">✕</button>
+    </div>
+    <p style="margin:0;color:var(--ink-muted);font-size:12.5px;">Demo form — not connected to a live calendar.</p>
+    <div class="field"><label>Customer name</label><input type="text" placeholder="e.g. Jordan Alvarez"></div>
+    <div class="field"><label>Service type</label>
+      <select><option>Water heater install/repair</option><option>Drain cleaning</option><option>Leak detection &amp; repair</option><option>Repipe</option><option>Emergency call</option><option>Fixture install</option></select>
+    </div>
+    <div class="field"><label>Technician</label>
+      <select><option>Mike R.</option><option>Dana T.</option><option>Carlos V.</option></select>
+    </div>
+    <div class="field"><label>Date &amp; time</label><input type="text" placeholder="Jul 8, 2026 · 10:00 AM"></div>
+    <div class="field"><label>Address</label><input type="text" placeholder="Street, city"></div>
+    <div style="margin-top:auto;display:flex;gap:10px;">
+      <button class="btn btn-ghost" id="booking-cancel" style="flex:1;">Cancel</button>
+      <button class="btn btn-primary" id="booking-confirm" style="flex:1;">Confirm booking</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---- Nav switching ----
+  var navItems = document.querySelectorAll('.nav-item[data-section]');
+  var sections = document.querySelectorAll('.section');
+  var titles = {
+    dashboard: ['Plumbing Division', 'Good morning, Summit Plumbing'],
+    opportunities: ['Sales', 'Opportunities pipeline'],
+    estimates: ['Sales', 'Estimates & invoices'],
+    booking: ['Operations', 'Calendar & booking'],
+    reports: ['Operations', 'Revenue & reports']
+  };
+  function showSection(id){
+    navItems.forEach(function(n){ n.classList.toggle('active', n.dataset.section === id); });
+    sections.forEach(function(s){ s.classList.toggle('active', s.id === 'sec-' + id); });
+    var t = titles[id];
+    if(t){
+      document.getElementById('topbar-eyebrow').textContent = t[0];
+      document.getElementById('topbar-title').textContent = t[1];
+    }
+    window.scrollTo(0,0);
+  }
+  navItems.forEach(function(n){
+    n.addEventListener('click', function(){ showSection(n.dataset.section); });
+  });
+  document.querySelectorAll('[data-goto]').forEach(function(b){
+    b.addEventListener('click', function(){ showSection(b.dataset.goto); });
+  });
+
+  // ---- Booking slide-over ----
+  var overlay = document.getElementById('booking-overlay');
+  function openBooking(){ overlay.classList.add('open'); }
+  function closeBooking(){ overlay.classList.remove('open'); }
+  document.getElementById('btn-open-booking').addEventListener('click', openBooking);
+  document.getElementById('btn-new-opp').addEventListener('click', openBooking);
+  document.getElementById('booking-close').addEventListener('click', closeBooking);
+  document.getElementById('booking-cancel').addEventListener('click', closeBooking);
+  document.getElementById('booking-confirm').addEventListener('click', closeBooking);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeBooking(); });
+
+  // ---- Funnel (dashboard) ----
+  var stages = [
+    {label:'New Lead', count:22, color:'#2557E8'},
+    {label:'Contacted', count:15, color:'#5B33B8'},
+    {label:'Estimate Sent', count:11, color:'#B9791A'},
+    {label:'Scheduled', count:8, color:'#146E9E'},
+    {label:'Won', count:6, color:'#1C9B6B'}
+  ];
+  var max = stages[0].count;
+  var funnelEl = document.getElementById('dash-funnel');
+  stages.forEach(function(s){
+    var row = document.createElement('div'); row.className = 'funnel-row';
+    var pct = Math.max(14, Math.round((s.count/max)*100));
+    row.innerHTML = '<div class="funnel-label">'+s.label+'</div>' +
+      '<div class="funnel-bar-track"><div class="funnel-bar-fill" style="width:'+pct+'%;background:'+s.color+';">'+s.count+'</div></div>';
+    funnelEl.appendChild(row);
+  });
+
+  // ---- Canvas line chart (revenue trend) ----
+  function drawLineChart(canvas, labels, values, color){
+    var dpr = window.devicePixelRatio || 1;
+    var cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
+    var cssH = canvas.height;
+    canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+    canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    var padL = 46, padR = 14, padT = 14, padB = 26;
+    var w = cssW - padL - padR, h = cssH - padT - padB;
+    var maxV = Math.max.apply(null, values) * 1.15;
+    var minV = 0;
+    ctx.clearRect(0,0,cssW,cssH);
+
+    // grid
+    ctx.strokeStyle = '#E3E7EE'; ctx.lineWidth = 1; ctx.font = '10.5px -apple-system,Segoe UI,sans-serif'; ctx.fillStyle = '#8891A0';
+    var steps = 4;
+    for(var i=0;i<=steps;i++){
+      var y = padT + h - (h*i/steps);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL+w, y); ctx.stroke();
+      var val = Math.round((maxV*i/steps));
+      ctx.fillText('$' + (val>=1000? Math.round(val/1000)+'k' : val), 4, y+3);
+    }
+
+    // points
+    var pts = values.map(function(v,i){
+      var x = padL + (w * i/(values.length-1));
+      var y = padT + h - ((v-minV)/(maxV-minV))*h;
+      return [x,y];
+    });
+
+    // area fill
+    var grad = ctx.createLinearGradient(0,padT,0,padT+h);
+    grad.addColorStop(0, color+'33'); grad.addColorStop(1, color+'02');
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], padT+h);
+    pts.forEach(function(p){ ctx.lineTo(p[0], p[1]); });
+    ctx.lineTo(pts[pts.length-1][0], padT+h);
+    ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+
+    // line
+    ctx.beginPath();
+    pts.forEach(function(p,i){ i===0? ctx.moveTo(p[0],p[1]) : ctx.lineTo(p[0],p[1]); });
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.lineJoin='round'; ctx.stroke();
+
+    // points + labels
+    pts.forEach(function(p,i){
+      ctx.beginPath(); ctx.arc(p[0], p[1], i===pts.length-1?4:2.5, 0, Math.PI*2);
+      ctx.fillStyle = i===pts.length-1? color : '#fff';
+      ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle=color; ctx.stroke();
+      ctx.fillStyle = '#8891A0'; ctx.textAlign='center';
+      ctx.fillText(labels[i], p[0], cssH-6);
+    });
+    ctx.textAlign='left';
+  }
+
+  var months = ['Feb','Mar','Apr','May','Jun','Jul'];
+  var revenue = [58000, 63500, 71000, 79800, 84200, 94320];
+  ['chart-revenue','chart-revenue-2'].forEach(function(id){
+    var c = document.getElementById(id);
+    if(c) drawLineChart(c, months, revenue, '#2557E8');
+  });
+
+  // ---- Bar chart: revenue by service ----
+  function drawBarChart(canvas, labels, values, colors){
+    var dpr = window.devicePixelRatio || 1;
+    var cssW = canvas.clientWidth || canvas.parentElement.clientWidth;
+    var cssH = canvas.height;
+    canvas.width = cssW*dpr; canvas.height = cssH*dpr;
+    canvas.style.width = cssW+'px'; canvas.style.height = cssH+'px';
+    var ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr);
+    var padL=46, padR=14, padT=14, padB=34;
+    var w = cssW-padL-padR, h = cssH-padT-padB;
+    var maxV = Math.max.apply(null, values)*1.15;
+    ctx.clearRect(0,0,cssW,cssH);
+    ctx.strokeStyle='#E3E7EE'; ctx.font='10.5px -apple-system,Segoe UI,sans-serif'; ctx.fillStyle='#8891A0';
+    var steps=4;
+    for(var i=0;i<=steps;i++){
+      var y = padT+h-(h*i/steps);
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+w,y); ctx.stroke();
+      var val = Math.round(maxV*i/steps);
+      ctx.fillText('$'+(val>=1000?Math.round(val/1000)+'k':val), 4, y+3);
+    }
+    var bw = w/labels.length*0.55;
+    labels.forEach(function(lab,i){
+      var cx = padL + w*(i+0.5)/labels.length;
+      var bh = (values[i]/maxV)*h;
+      var x = cx-bw/2, y = padT+h-bh;
+      var r=5;
+      ctx.beginPath();
+      ctx.moveTo(x,y+bh); ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r); ctx.lineTo(x+bw-r,y); ctx.arcTo(x+bw,y,x+bw,y+r,r); ctx.lineTo(x+bw,y+bh); ctx.closePath();
+      ctx.fillStyle = colors[i]; ctx.fill();
+      ctx.fillStyle='#101826'; ctx.font='11px SFMono-Regular,Consolas,monospace'; ctx.textAlign='center';
+      ctx.fillText('$'+Math.round(values[i]/1000)+'k', cx, y-6);
+      ctx.fillStyle='#5B6472'; ctx.font='10.5px -apple-system,Segoe UI,sans-serif';
+      ctx.fillText(lab, cx, cssH-14);
+    });
+    ctx.textAlign='left';
+  }
+  var svc = ['Water Htr','Drain','Repipe','Leak Rpr','Fixtures','Sewer'];
+  var svcVals = [24800, 14200, 31500, 18900, 9600, 12300];
+  var svcColors = ['#2557E8','#5B33B8','#146E9E','#B9791A','#1C9B6B','#D8433D'];
+  var svcCanvas = document.getElementById('chart-services');
+  if(svcCanvas) drawBarChart(svcCanvas, svc, svcVals, svcColors);
+  var legend = document.getElementById('services-legend');
+  if(legend){
+    var names = ['Water Heaters','Drain Cleaning','Repipe','Leak Repair','Fixtures','Sewer/Septic'];
+    names.forEach(function(n,i){
+      var d = document.createElement('div'); d.className='legend-item';
+      d.innerHTML = '<span class="legend-sw" style="background:'+svcColors[i]+';"></span>'+n;
+      legend.appendChild(d);
+    });
+  }
+})();
+</script>
+<!-- Live GHL API bridge. Token stays server-side in Netlify Functions. -->
+<script src="/assets/live-dashboard.js"></script>

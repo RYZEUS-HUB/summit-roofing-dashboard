@@ -1,0 +1,16 @@
+{
+  "name": "summit-ghl-dashboard-live",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Static frontend + Netlify functions ready'"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "netlify-cli": "latest"
+  }
+}
